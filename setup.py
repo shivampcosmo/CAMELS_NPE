@@ -51,7 +51,6 @@ def get_requirements():
 # setup:
 setuptools.setup(name='CAMELS_NPE',
                  description='NPE for CAMELS',
-                 long_description=get_long_description(),
                  author='Shiam Pandey',
                  license='GPL',
                  project_urls={
