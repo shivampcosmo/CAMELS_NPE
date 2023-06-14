@@ -407,7 +407,7 @@ class NSF_M1_CNNcond(nn.Module):
         return x
 
 
-class NSF_Mdiff_CNNcond(nn.Module):
+class NSF_Reg_CNNcond(nn.Module):
     """
     This function models the probability of observing all the lower halo masses
     """

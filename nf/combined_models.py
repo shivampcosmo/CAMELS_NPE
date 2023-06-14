@@ -33,10 +33,7 @@ class COMBINED_Model(nn.Module):
 
     def __init__(
         self,
-        # priors_all,
-        Mdiff_model,
-        # M1_model,
-        # Ntot_model,
+        Reg_model,
         ndim,
         ksize,
         nside_in,
@@ -48,15 +45,10 @@ class COMBINED_Model(nn.Module):
         layers_types=['cnn', 'res', 'res', 'res'],
         act='tanh',
         padding='valid',
-        # sep_Ntot_cond=False,
-        # sep_M1_cond=False,
-        sep_Mdiff_cond=False,
+        sep_Reg_cond=False,
         ):
         super().__init__()
-        # self.priors_all = priors_all
-        # self.M1_model = M1_model
-        # self.Ntot_model = Ntot_model
-        self.Mdiff_model = Mdiff_model
+        self.Reg_model = Reg_model
         self.nbatch = nbatch
         self.nout = nout
         self.ninp = ninp
@@ -74,44 +66,44 @@ class COMBINED_Model(nn.Module):
             padding=padding
             )
         self.ndim = ndim
-        self.sep_Mdiff_cond = sep_Mdiff_cond
-        if self.sep_Mdiff_cond:
-            self.cond_Mdiff_layer = FCNN(nout, nout, nout)
+        self.sep_Reg_cond = sep_Reg_cond
+        if self.sep_Reg_cond:
+            self.cond_Reg_layer = FCNN(nout, nout, nout)
 
     def forward(
         self,
-        x_Mdiff,
+        x_Reg,
         cond_x=None,
-        mask_Mdiff_truth_all=None
+        mask_Reg_truth_all=None
         ):
         nbatches = cond_x.shape[0]
         logP_Ntot = torch.zeros(1, device=device)
         logP_M1 = torch.zeros(1, device=device)
-        logP_Mdiff = torch.zeros(1, device=device)
+        logP_Reg = torch.zeros(1, device=device)
         for jb in range(nbatches):
             cond_out = self.conv_layers(cond_x[jb])
-            mask_Mdiff_truth = mask_Mdiff_truth_all[jb].to(device)
-            if self.sep_Mdiff_cond:
-                cond_inp_Mdiff = self.cond_Mdiff_layer(cond_out)
+            mask_Reg_truth = mask_Reg_truth_all[jb].to(device)
+            if self.sep_Reg_cond:
+                cond_inp_Reg = self.cond_Reg_layer(cond_out)
             if jb == 0:
-                logP_Mdiff = self.Mdiff_model.forward(x_Mdiff[jb], cond_inp_Mdiff, mask_Mdiff_truth)
+                logP_Reg = self.Reg_model.forward(x_Reg[jb], cond_inp_Reg, mask_Reg_truth)
             else:
-                logP_Mdiff += self.Mdiff_model.forward(x_Mdiff[jb], cond_inp_Mdiff, mask_Mdiff_truth)
-        loss = torch.mean(-logP_Mdiff)
+                logP_Reg += self.Reg_model.forward(x_Reg[jb], cond_inp_Reg, mask_Reg_truth)
+        loss = torch.mean(-logP_Reg)
 
         return loss
 
     def inverse(
         self,
         cond_x=None,
-        mask_Mdiff_truth=None,
+        mask_Reg_truth=None,
         ):
         nbatches = cond_x.shape[0]
         M_diff_samp_out = []
         for jb in range(nbatches):
             cond_out = self.conv_layers(cond_x[jb])
-            if self.sep_Mdiff_cond:
-                cond_out = self.cond_Mdiff_layer(cond_out)
-            M_diff_samp, _ = self.Mdiff_model.inverse(cond_out, mask_Mdiff_truth)
+            if self.sep_Reg_cond:
+                cond_out = self.cond_Reg_layer(cond_out)
+            M_diff_samp, _ = self.Reg_model.inverse(cond_out, mask_Reg_truth)
             M_diff_samp_out.append(M_diff_samp)
         return M_diff_samp_out
