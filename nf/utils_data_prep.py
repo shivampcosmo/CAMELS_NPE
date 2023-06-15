@@ -88,8 +88,8 @@ def prep_density_halo_cats(
 
     # final dict with all the required data to run the model
     return_dict = {}
-    return_dict['df_d_all'] = df_d_all
-    return_dict['df_pred_all'] = df_pred_all
+    return_dict['df_d_all'] = np.array([df_d_all])
+    return_dict['df_pred_all'] = np.array([df_pred_all])
     return return_dict
 
 
