@@ -10,6 +10,8 @@ from nf.utils import unconstrained_RQS
 from torch.distributions import HalfNormal, Weibull, Gumbel
 if torch.cuda.is_available():    
     device = torch.device("cuda")
+elif torch.backends.mps.is_available():
+    device = torch.device("mps")
 else:
     device = torch.device("cpu")
 
@@ -131,8 +133,8 @@ class NSF_Reg_CNNcond(nn.Module):
                     scale, conc = torch.exp(mu), torch.exp(alpha)
                 else:
                     if self.mu_pos:
-                        mu = torch.exp(mu)
-                        # mu = (1 + nn.Tanh()(mu)) / 2
+                        # mu = torch.exp(mu)
+                        mu = ((1 + nn.Tanh()(mu)) / 2)*self.B
                     sig = torch.exp(alpha)
             else:
                 print('base_dist not recognized')
@@ -200,8 +202,9 @@ class NSF_Reg_CNNcond(nn.Module):
                     scale, conc = torch.exp(mu), torch.exp(alpha)
                 else:
                     if self.mu_pos:
-                        mu = torch.exp(mu)
+                        # mu = torch.exp(mu)
                         # mu = (1 + nn.Tanh()(mu)) / 2
+                        mu = ((1 + nn.Tanh()(mu)) / 2)*self.B
                     sig = torch.exp(alpha)
             else:
                 print('base_dist not recognized')
@@ -285,8 +288,8 @@ class MAF_CNN_cond(nn.Module):
             if i == 0:
                 out = self.layer_init(cond_inp)
                 mu, alpha = out[:, 0], out[:, 1]
-                # mu = -torch.exp(mu)
-                mu = (1 + nn.Tanh()(mu))
+                mu = -torch.exp(mu)
+                # mu = (1 + nn.Tanh()(mu))
             else:
                 out = self.layers[i - 1](torch.cat([cond_inp, x[:, :i]], dim=1))
                 mu, alpha = out[:, 0], out[:, 1]
@@ -310,8 +313,8 @@ class MAF_CNN_cond(nn.Module):
             if i == 0:
                 out = self.layer_init(cond_inp)
                 mu, alpha = out[:, 0], out[:, 1]
-                # mu = -torch.exp(mu)
-                mu = (1 + nn.Tanh()(mu))
+                mu = -torch.exp(mu)
+                # mu = (1 + nn.Tanh()(mu))
             else:
                 out = self.layers[i - 1](torch.cat([cond_inp, x[:, :i]], dim=1))
                 mu, alpha = out[:, 0], out[:, 1]

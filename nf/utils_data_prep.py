@@ -28,7 +28,7 @@ def load_density_halo_data(
         min_val_Mtot_tosub = np.amin(df_d_all)
     df_d_all -= min_val_Mtot_tosub
     if sig_val_Mtot_todiv is None:
-        sig_val_Mtot_todiv = np.std(df_d_all)
+        sig_val_Mtot_todiv = 5*np.std(df_d_all)
     df_d_all /= sig_val_Mtot_todiv
 
     root_out     = sdir + '/%s/CV/subvol_NPE'%fields_all[0]
@@ -59,7 +59,7 @@ def load_density_halo_data(
         df_pred_all[...,jf] -= df_field_min
 
         if save_sig_vals_fields_todiv:
-            df_field_sig = np.std(df_pred_all[...,jf])
+            df_field_sig = 5*np.std(df_pred_all[...,jf])
             sig_vals_fields_todiv[jf] = df_field_sig
         else:
             df_field_sig = sig_vals_fields_todiv[jf]

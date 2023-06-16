@@ -4,6 +4,8 @@ import numpy as np
 from nf.cnn_3d_stack import CNN3D_stackout
 if torch.cuda.is_available():    
     device = torch.device("cuda")
+elif torch.backends.mps.is_available():
+    device = torch.device("mps")    
 else:
     device = torch.device("cpu")
 
